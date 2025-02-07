@@ -125,7 +125,7 @@ ui <- page_fillable(
     background-color: rgba(255, 255, 255, 0.5) !important; /* Fondo semitransparente */
     border: none !important; /* Sin bordes */
     box-shadow: none !important; /* Sin sombra */
-    color: white !important; /* Texto negro */
+    color: white !important; /* Texto blanco */
   }
 ")),
   
@@ -137,13 +137,33 @@ ui <- page_fillable(
     selectInput(inputId = "vect_drv", choices = vect_drv, label = "Selecciona tu región:", selected = "Nacional")
   ),
   
+  # Primera fila con el primer value_box y el gráfico a su derecha
+  tags$div(
+    style = "margin-top: -250px;",  # Reduce la distancia entre layouts
+    layout_columns(
+      gap = "0px",
+      col_widths = c(6, 5),
+      justify = "space-between", 
+      align = "left",
+      tags$div(class = "custom-value-box", vbx[[1]]),
+      tags$div(
+        style = "width: 600px; height: 250px; background-color: rgba(255, 255, 255, 0.5);
+               border-radius: 15px; padding: 10px; display: flex; align-items: center;
+               justify-content: left; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);",
+        echarts4rOutput("graf_nps_comp", height = "220px", width = "700px")
+      )
+    )
+  ),
+  
+  # Segunda fila con los otros dos value_boxes
   layout_columns(
-    col_widths = c(9,9),
-    row_heights = c(1, 1, 1),
-    vbx[[1]], vbx[[2]],
+    col_widths = c(6, 6),
+    row_heights = c(1,1),
+    vbx[[2]],
     vbx[[3]]
   )
 )
+
 
 ## Server
 server <- function(input, output){
@@ -274,7 +294,9 @@ server <- function(input, output){
       e_chart(x = fecha) |> 
       e_line(serie = promotores_pct) |> 
       e_line(serie = detractores_pct) |> 
-      e_line(serie = pasivos_pct)
+      e_line(serie = pasivos_pct) |> 
+      e_tooltip(trigger = "axis") |> 
+      e_legend(orient = "horizontal", left = "center", top = "bottom")
     
   })
   
