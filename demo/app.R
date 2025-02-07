@@ -115,9 +115,7 @@ ui <- page_fillable(
   .bslib-value-box {
     width: 450px !important;  /* Ajusta el ancho */
     height: 200px !important; /* Ajusta la altura */
-    font-size: 1000px !important; /* Ajusta el tamaño del texto */
     padding: 5px !important; /* Ajusta el espacio interno */
-    color: white !important;
   }
 ")),
   
@@ -191,8 +189,12 @@ server <- function(input, output){
         y = ~nps,
         color = I("#c1121f"),
         fill = "tozeroy",
-        alpha = 0.2
-      ) %>%
+        alpha = 0.2,
+        textposition = "auto",
+        hoverinfo = "text",
+        hovertext = paste("Fecha :", format(data$fecha,"%B %Y"),
+                          "<br>NPS :", round(data$nps,2))
+      ) |>
       layout(
         xaxis = list(title = F,visible = T, showgrid = FALSE),
         yaxis = list(visible = FALSE, showgrid = FALSE),
@@ -200,7 +202,8 @@ server <- function(input, output){
         margin = list(t = 0, r = 0, l = 0, b = 0),
         paper_bgcolor = "transparent",
         plot_bgcolor = "transparent"
-      )
+      ) |> 
+      config(displayModeBar = F)
   })
   
   output$graf_csat <- renderPlotly({
@@ -213,8 +216,12 @@ server <- function(input, output){
         y = ~csat,
         color = I("#c1121f"),
         fill = "tozeroy",
-        alpha = 0.2
-      ) %>%
+        alpha = 0.2,
+        textposition = "auto",
+        hoverinfo = "text",
+        hovertext = paste("Fecha :", format(data$fecha,"%B %Y"),
+                          "<br>CSAT :", round(data$csat,2))
+      ) |>
       layout(
         xaxis = list(title = F,visible = T, showgrid = FALSE),
         yaxis = list(visible = FALSE, showgrid = FALSE),
@@ -222,7 +229,8 @@ server <- function(input, output){
         margin = list(t = 0, r = 0, l = 0, b = 0),
         paper_bgcolor = "transparent",
         plot_bgcolor = "transparent"
-      )
+      ) |> 
+      config(displayModeBar = F)
   })
   
   output$graf_ces <- renderPlotly({
@@ -235,7 +243,11 @@ server <- function(input, output){
         y = ~ces,
         color = I("#c1121f"),
         fill = "tozeroy",
-        alpha = 0.2
+        alpha = 0.2,
+        textposition = "auto",
+        hoverinfo = "text",
+        hovertext = paste("Fecha :", format(data$fecha,"%B %Y"),
+                          "<br>CES :", round(data$ces,2))
       ) |> 
       layout(
         xaxis = list(title = F,visible = TRUE, showgrid = FALSE),
@@ -244,7 +256,8 @@ server <- function(input, output){
         margin = list(t = 0, r = 0, l = 0, b = 0),
         paper_bgcolor = "transparent",
         plot_bgcolor = "transparent"
-      )
+      ) |> 
+      config(displayModeBar = F)
   })
   
 }
