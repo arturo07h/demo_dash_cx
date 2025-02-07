@@ -3,6 +3,7 @@ library(shiny)
 library(bslib)
 library(rlang)
 library(plotly)
+library(echarts4r)
 
 options(encoding = "UTF-8")
 Sys.setlocale("LC_TIME", "es_ES.UTF-8")
@@ -156,11 +157,10 @@ server <- function(input, output){
     
   })
   
-  ## Data de evolución de componentes
+  ### Data de evolución de componentes
   data_evo_componetes <- reactive({
     data_gen |> fsubset(id_region == input$vect_drv)
   })
-  
   
   ## Creación de objetos
   
@@ -179,6 +179,7 @@ server <- function(input, output){
   
   ### Gráficos de evolución de componentes
   
+  ## NPS
   output$graf_nps <- renderPlotly({
     
     data <- data_evo_componetes() |> fselect(fecha,nps)
@@ -206,6 +207,7 @@ server <- function(input, output){
       config(displayModeBar = F)
   })
   
+  ## CSAT
   output$graf_csat <- renderPlotly({
     
     data <- data_evo_componetes() |> fselect(fecha,csat)
@@ -233,6 +235,7 @@ server <- function(input, output){
       config(displayModeBar = F)
   })
   
+  ## CES
   output$graf_ces <- renderPlotly({
     
     data <- data_evo_componetes() |> fselect(fecha,ces)
@@ -258,6 +261,21 @@ server <- function(input, output){
         plot_bgcolor = "transparent"
       ) |> 
       config(displayModeBar = F)
+  })
+  
+  ### Componentes NPS
+  
+  output$graf_nps_comp <- renderEcharts4r({
+    
+    data <- data_evo_componetes() |> 
+      fselect(fecha,promotores_pct,detractores_pct,pasivos_pct)
+    
+    data |> 
+      e_chart(x = fecha) |> 
+      e_line(serie = promotores_pct) |> 
+      e_line(serie = detractores_pct) |> 
+      e_line(serie = pasivos_pct)
+    
   })
   
 }
