@@ -112,20 +112,6 @@ ui <- fluidPage(
       border: none; /* Opcional: quitar bordes */
       box-shadow: none; /* Opcional: quitar sombra */
     }
-    .small-graph {
-    background-color: rgba(255, 255, 255, 0.5) !important; /* Fondo semitransparente */
-    border: none !important; /* Quitar bordes */
-    box-shadow: none !important; /* Quitar sombra */
-    width: 480px !important; /* Ajusta el ancho */
-    height: 420px !important; /* Ajusta la altura */
-    overflow: hidden !important; /* Evita desbordamientos */
-    padding: 0px !important; /* Añade espacio interno */
-    border-radius: 10px !important; /* Bordes redondeados */
-    display: flex !important; /* Asegura flexibilidad */
-    flex-direction: column !important; /* Acomoda los gráficos en columna */
-    align-items: center !important; /* Centra los gráficos */
-    justify-content: left !important; /* Alinea los gráficos verticalmente */
-    }
   ")),
   
   ## Título y filtro regional
