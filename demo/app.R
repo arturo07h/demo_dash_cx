@@ -76,94 +76,122 @@ theme <- bs_theme(
 )
 
 vbx <- list(
-  
+
   value_box(
     title = tags$p("NPS", style = "font-size: 200%;font-weight: bold;"),
     value = uiOutput("value_nps"),
     showcase = plotlyOutput("graf_nps"),
     showcase_layout = "bottom"
   ),
-  
+
   value_box(
     title = tags$p("CSAT", style = "font-size: 200%;font-weight: bold;"),
     value = uiOutput("value_csat"),
     showcase = plotlyOutput("graf_csat"),
     showcase_layout = "bottom"
   ),
-  
+
   value_box(
     title = tags$p("CES", style = "font-size: 200%;font-weight: bold;"),
     value = uiOutput("value_ces"),
     showcase = plotlyOutput("graf_ces"),
     showcase_layout = "bottom"
   )
-  
+
 )
 
 ## UI
-ui <- page_fillable(
+ui <- fluidPage(
   
   theme = theme,
+  
+  ## Estilo de values box
   tags$style(HTML("
     .card {
       background-color: rgba(255, 255, 255, 0.5) !important; /* Fondo semitransparente */
       border: none; /* Opcional: quitar bordes */
       box-shadow: none; /* Opcional: quitar sombra */
     }
+    .small-graph {
+    background-color: rgba(255, 255, 255, 0.5) !important; /* Fondo semitransparente */
+    border: none !important; /* Quitar bordes */
+    box-shadow: none !important; /* Quitar sombra */
+    width: 480px !important; /* Ajusta el ancho */
+    height: 420px !important; /* Ajusta la altura */
+    overflow: hidden !important; /* Evita desbordamientos */
+    padding: 0px !important; /* Añade espacio interno */
+    border-radius: 10px !important; /* Bordes redondeados */
+    display: flex !important; /* Asegura flexibilidad */
+    flex-direction: column !important; /* Acomoda los gráficos en columna */
+    align-items: center !important; /* Centra los gráficos */
+    justify-content: left !important; /* Alinea los gráficos verticalmente */
+    }
   ")),
   
-  tags$style(HTML("
-  .bslib-value-box {
-    width: 450px !important;  /* Ajusta el ancho */
-    height: 200px !important; /* Ajusta la altura */
-    padding: 5px !important; /* Ajusta el espacio interno */
-  }
-")),
-  
-  tags$style(HTML("
-  .form-control, .selectize-input {
-    background-color: rgba(255, 255, 255, 0.5) !important; /* Fondo semitransparente */
-    border: none !important; /* Sin bordes */
-    box-shadow: none !important; /* Sin sombra */
-    color: white !important; /* Texto blanco */
-  }
-")),
-  
-  layout_columns(
-    col_widths = c(10, 2), 
-    justify = "space-between", 
-    align = "left",
-    tags$h2("Indicadores de experiencia del cliente"),
-    selectInput(inputId = "vect_drv", choices = vect_drv, label = "Selecciona tu región:", selected = "Nacional")
-  ),
-  
-  # Primera fila con el primer value_box y el gráfico a su derecha
-  tags$div(
-    style = "margin-top: -250px;",  # Reduce la distancia entre layouts
-    layout_columns(
-      gap = "0px",
-      col_widths = c(6, 5),
-      justify = "space-between", 
-      align = "left",
-      tags$div(class = "custom-value-box", vbx[[1]]),
-      tags$div(
-        style = "width: 600px; height: 250px; background-color: rgba(255, 255, 255, 0.5);
-               border-radius: 15px; padding: 10px; display: flex; align-items: center;
-               justify-content: left; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);",
-        echarts4rOutput("graf_nps_comp", height = "220px", width = "700px")
-      )
+  ## Título y filtro regional
+  fluidRow(
+    column(
+      9,
+      tags$h2("Indicadores de experiencia del cliente"),
+    ),
+    column(
+      3,
+      selectInput(inputId = "vect_drv", choices = vect_drv, label = "Selecciona tu región:", selected = "Nacional")
     )
   ),
   
-  # Segunda fila con los otros dos value_boxes
-  layout_columns(
-    col_widths = c(6, 6),
-    row_heights = c(1,1),
-    vbx[[2]],
-    vbx[[3]]
+  ## Columns de values box
+  fluidRow(
+    column(
+      4 ,
+      value_box(
+        title = tags$p("NPS", style = "font-size: 200%;font-weight: bold;"),
+        value = uiOutput("value_nps"),
+        showcase = plotlyOutput("graf_nps"),
+        showcase_layout = "bottom"
+      )
+    ),
+    column(
+      4,
+      value_box(
+        title = tags$p("CSAT", style = "font-size: 200%;font-weight: bold;"),
+        value = uiOutput("value_csat"),
+        showcase = plotlyOutput("graf_csat"),
+        showcase_layout = "bottom"
+      )
+    ),
+    column(
+      4,
+      value_box(
+        title = tags$p("CES", style = "font-size: 200%;font-weight: bold;"),
+        value = uiOutput("value_ces"),
+        showcase = plotlyOutput("graf_ces"),
+        showcase_layout = "bottom"
+      )
+    )
+  ),
+  fluidRow(
+    column(
+      4,
+      echarts4rOutput("graf_nps_comp", height = "400px", width = "450px")
+    ),
+    column(
+      3,
+      div(
+        # class = "small-graph", 
+        style = "
+        display: flex; 
+        flex-direction: column; 
+        align-items: left; 
+        height: 600px;
+        width: 600;
+        ",
+        echarts4rOutput("graf_evo_fcr", height = "240px", width = "500px"),
+        echarts4rOutput("graf_fcr_gauge", height = "300px", width = "500px")
+      )
+    )
   )
 )
-
 
 ## Server
 server <- function(input, output){
@@ -284,19 +312,105 @@ server <- function(input, output){
   })
   
   ### Componentes NPS
-  
   output$graf_nps_comp <- renderEcharts4r({
     
     data <- data_evo_componetes() |> 
-      fselect(fecha,promotores_pct,detractores_pct,pasivos_pct)
+      fselect(fecha,promotores_pct,detractores_pct,pasivos_pct) |> 
+      frename(Promotores = promotores_pct,
+              Detractores = detractores_pct,
+              Pasivos = pasivos_pct)
     
     data |> 
       e_chart(x = fecha) |> 
-      e_line(serie = promotores_pct) |> 
-      e_line(serie = detractores_pct) |> 
-      e_line(serie = pasivos_pct) |> 
+      
+      e_bar(serie = Detractores, stack = "grp", color = "#f95738") |> 
+      e_bar(serie = Pasivos, stack = "grp", color = "#c77dff") |> 
+      e_bar(serie = Promotores, stack = "grp", color = "#2ec4b6") |> 
+      
+      e_title("Evolución de componentes NPS",
+              textStyle = list(color = "white",fontSize = 20)) |> 
       e_tooltip(trigger = "axis") |> 
-      e_legend(orient = "horizontal", left = "center", top = "bottom")
+      e_legend(orient = "horizontal", 
+               left = "center", 
+               top = "bottom",
+               textStyle = list(color = "white",fontSize = 16)) |> 
+      e_x_axis(axisLabel = list(color = "white",fontSize = 16)) |> 
+      e_y_axis(axisLabel = list(color = "white",fontSize = 16), max = 100 ) |> 
+      
+      e_datazoom(
+        type = "slider",
+        startValue = "2024-01-01",
+        bottom = "8%"  
+      ) |> 
+      e_grid(
+        bottom = "20%"  
+      )
+    
+  })
+  
+  ## Gráfico gauge FCR
+  output$graf_fcr_gauge <- renderEcharts4r({
+    
+    value_fil <- data_evo_componetes() |> fsubset(fecha == fmax(fecha))
+    value <- funique(value_fil$fcr)
+    
+    e_charts() |> 
+      e_gauge(
+        round(value, 1),  # Valor del gauge
+        name = round(value, 1),
+        radius = "100%",
+        startAngle = 180,
+        endAngle = 0,
+        itemStyle = list(color = "#a7c957"),
+        axisLine = list(
+          lineStyle = list(
+            color = list(c(0.33, "#f95738"), c(0.67, "#c77dff"), c(1, "#2ec4b6")),
+            width = 10
+          )
+        ),
+        axisTick = list(lineStyle = list(width = 2, color = "white", fontSize = 16)),
+        axisLabel = list(
+          show = TRUE,
+          color = "white",
+          fontWeight = "bold",
+          borderRadius = 5,
+          fontSize = 15
+        ),
+        pointer = list(show = TRUE, icon = "triangle", length = "100%"),
+        itemStyle = list(color = "white"),
+        detail = list(
+          show = TRUE,
+          color = "white",
+          fontSize = 0,
+          fontWeight = "bold"
+        ),
+        title = list(
+          show = TRUE,
+          color = "white", 
+          textStyle = list(
+            color = "white",  
+            fontSize = 22,    
+            fontWeight = "bolder"
+          )
+        )
+      ) |> 
+      e_title("Enero 2025",
+              textStyle = list(color = "white",fontSize = 16))
+  })
+  
+  ### Gráfico de evolución de FCR
+  output$graf_evo_fcr <- renderEcharts4r({
+    # browser()
+    data_evo_componetes() |> 
+      fselect(fecha,fcr) |> 
+      e_charts(x = fecha) |> 
+      e_area(serie = fcr, symbol = "none", color = "red") |> 
+      e_title("Resolución en el primer contacto (FCR)",
+              textStyle = list(color = "white",fontSize = 20)) |> 
+      e_legend(show = F) |> 
+      e_x_axis(axisLabel = list(color = "white",fontSize = 14)) |> 
+      e_y_axis(axisLabel = list(color = "white",fontSize = 14), max = 100)
+    
     
   })
   
