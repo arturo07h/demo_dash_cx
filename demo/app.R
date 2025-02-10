@@ -6,7 +6,7 @@ library(plotly)
 library(echarts4r)
 
 options(encoding = "UTF-8")
-Sys.setlocale("LC_TIME", "es_ES.UTF-8")
+# Sys.setlocale("LC_TIME", "es_ES.UTF-8")
 
 # Cargar base de datos ----------------------------------------------------
 rutaData <- "./data-raw/data_customer_experience_demo.xlsx"
@@ -377,8 +377,8 @@ server <- function(input, output){
         margin = list(t = 0, r = 0, l = 0, b = 0),
         paper_bgcolor = "transparent",
         plot_bgcolor = "transparent"
-      ) |> 
-      config(locale = "es") 
+      ) #|> 
+      #config(locale = "es") 
   })
   
   ## Evolución de tasa de retención
@@ -418,8 +418,8 @@ server <- function(input, output){
         margin = list(t = 0, r = 0, l = 0, b = 0),
         paper_bgcolor = "transparent",
         plot_bgcolor = "transparent"
-      ) |> 
-      config(locale = "es") 
+      ) #|> 
+      #config(locale = "es") 
   })
   
   ### Componentes NPS
