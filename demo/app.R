@@ -159,21 +159,56 @@ ui <- fluidPage(
   fluidRow(
     column(
       4,
-      echarts4rOutput("graf_nps_comp", height = "400px", width = "450px")
+      div(
+        style = "
+        background-color: rgba(255, 255, 255, 0.5) !important; /* Fondo semitransparente */
+        border: none; /* Opcional: quitar bordes */
+        box-shadow: none; /* Opcional: quitar sombra */
+        border-radius: 15px; /* Esquinas redondeadas */
+        padding: 10px; /* Opcional: espacio interno */
+         height: 430px;
+        ",
+        echarts4rOutput("graf_nps_comp", height = "400px", width = "450px")
+      )
     ),
     column(
-      3,
+      4,
       div(
         # class = "small-graph", 
+        style = "
+        background-color: rgba(255, 255, 255, 0.5) !important; /* Fondo semitransparente */
+        border: none; /* Opcional: quitar bordes */
+        box-shadow: none; /* Opcional: quitar sombra */
+        border-radius: 15px; /* Esquinas redondeadas */
+        padding: 10px; /* Opcional: espacio interno */
+        height: 430px;
+        ",
+        echarts4rOutput("graf_evo_fcr", height = "240px", width = "450px"),
+        echarts4rOutput("graf_fcr_gauge", height = "250px", width = "450px")
+      )
+    ),
+    column(
+      4,
+      div(
         style = "
         display: flex; 
         flex-direction: column; 
         align-items: left; 
-        height: 600px;
-        width: 600;
+        height: 450px;
+        width: 400;
         ",
-        echarts4rOutput("graf_evo_fcr", height = "240px", width = "500px"),
-        echarts4rOutput("graf_fcr_gauge", height = "300px", width = "500px")
+        value_box(
+          title = tags$p("Tiempo promedio de respuesta", style = "font-size: 120%;font-weight: bold;"),
+          value = uiOutput("value_tiempo_resp"),
+          showcase = plotlyOutput("graf_tiempo_res"),
+          showcase_layout = showcase_bottom(height = "100px")
+        ),
+        value_box(
+          title = tags$p("Tasa de retención", style = "font-size: 120%;font-weight: bold;"),
+          value = uiOutput("value_tasa_ret"),
+          showcase = plotlyOutput("graf_tasa_ret"),
+          showcase_layout = showcase_bottom(height = "100px")
+        )
       )
     )
   )
@@ -211,6 +246,14 @@ server <- function(input, output){
     round(funique(data_componentes()$ces),2)
   })
   
+  output$value_tiempo_resp <- renderText({
+    round(funique(data_componentes()$tiempo_respuesta),2)
+  })
+  
+  output$value_tasa_ret <- renderText({
+    round(funique(data_componentes()$tasa_retencion),2)
+  })
+  
   ### Gráficos de evolución de componentes
   
   ## NPS
@@ -231,7 +274,7 @@ server <- function(input, output){
                           "<br>NPS :", round(data$nps,2))
       ) |>
       layout(
-        xaxis = list(title = F,visible = T, showgrid = FALSE),
+        xaxis = list(title = F,visible = T, showgrid = FALSE, color = "white"),
         yaxis = list(visible = FALSE, showgrid = FALSE),
         hovermode = "x",
         margin = list(t = 0, r = 0, l = 0, b = 0),
@@ -259,7 +302,7 @@ server <- function(input, output){
                           "<br>CSAT :", round(data$csat,2))
       ) |>
       layout(
-        xaxis = list(title = F,visible = T, showgrid = FALSE),
+        xaxis = list(title = F,visible = T, showgrid = FALSE, color = "white"),
         yaxis = list(visible = FALSE, showgrid = FALSE),
         hovermode = "x",
         margin = list(t = 0, r = 0, l = 0, b = 0),
@@ -287,7 +330,7 @@ server <- function(input, output){
                           "<br>CES :", round(data$ces,2))
       ) |> 
       layout(
-        xaxis = list(title = F,visible = TRUE, showgrid = FALSE),
+        xaxis = list(title = F,visible = TRUE, showgrid = FALSE, color = "white"),
         yaxis = list(visible = FALSE, showgrid = FALSE),
         hovermode = "x",
         margin = list(t = 0, r = 0, l = 0, b = 0),
@@ -295,6 +338,88 @@ server <- function(input, output){
         plot_bgcolor = "transparent"
       ) |> 
       config(displayModeBar = F)
+  })
+  
+  ## Evolución Tiempo promedio de respuesta
+  output$graf_tiempo_res <- renderEcharts4r({
+    
+    data <- data_evo_componetes() |> fselect(fecha,tiempo_respuesta)
+    
+    fecha_max <- max(data$fecha)
+    fecha_min <- fecha_max - months(13)
+    
+    plot_ly(x = data$fecha, 
+            y = data$tiempo_respuesta,
+            type = "bar",
+            marker = list(color = "#73d2de"),
+            textposition = "auto",
+            hoverinfo = "text",
+            hovertext = paste("Fecha :", format(data$fecha,"%B %Y"),
+                              "<br>TPR :", round(data$tiempo_respuesta,2))) |> 
+      layout(
+        yaxis = list(
+          color = "white",
+          showticklabels = FALSE
+        ),
+        xaxis = list(
+          color = "white",
+          range = c(fecha_min, fecha_max),
+          rangeselector = list(
+            buttons = list(
+              list(count = 6, label = "6 meses", step = "month", stepmode = "backward"),
+              list(count = 1, label = "1 año", step = "year", stepmode = "backward"),
+              list(step = "all", label = "Todo")
+            )
+          ),
+          rangeslider = list(visible = F, thickness = .1)
+        ),
+        hovermode = "x",
+        margin = list(t = 0, r = 0, l = 0, b = 0),
+        paper_bgcolor = "transparent",
+        plot_bgcolor = "transparent"
+      ) |> 
+      config(locale = "es") 
+  })
+  
+  ## Evolución de tasa de retención
+  output$graf_tasa_ret <- renderEcharts4r({
+    
+    data <- data_evo_componetes() |> fselect(fecha,tasa_retencion)
+    
+    fecha_max <- max(data$fecha)
+    fecha_min <- fecha_max - months(13)
+    
+    plot_ly(x = data$fecha, 
+            y = data$tasa_retencion,
+            type = "bar",
+            marker = list(color = "#02c39a"),
+            textposition = "auto",
+            hoverinfo = "text",
+            hovertext = paste("Fecha :", format(data$fecha,"%B %Y"),
+                              "<br>TPR :", round(data$tasa_retencion,2))) |> 
+      layout(
+        yaxis = list(
+          color = "white",
+          showticklabels = FALSE
+        ),
+        xaxis = list(
+          color = "white",
+          range = c(fecha_min, fecha_max),
+          rangeselector = list(
+            buttons = list(
+              list(count = 6, label = "6 meses", step = "month", stepmode = "backward"),
+              list(count = 1, label = "1 año", step = "year", stepmode = "backward"),
+              list(step = "all", label = "Todo")
+            )
+          ),
+          rangeslider = list(visible = F, thickness = .1)
+        ),
+        hovermode = "x",
+        margin = list(t = 0, r = 0, l = 0, b = 0),
+        paper_bgcolor = "transparent",
+        plot_bgcolor = "transparent"
+      ) |> 
+      config(locale = "es") 
   })
   
   ### Componentes NPS
@@ -310,7 +435,7 @@ server <- function(input, output){
       e_chart(x = fecha) |> 
       
       e_bar(serie = Detractores, stack = "grp", color = "#f95738") |> 
-      e_bar(serie = Pasivos, stack = "grp", color = "#c77dff") |> 
+      e_bar(serie = Pasivos, stack = "grp", color = "#ffa62b") |> 
       e_bar(serie = Promotores, stack = "grp", color = "#2ec4b6") |> 
       
       e_title("Evolución de componentes NPS",
@@ -386,7 +511,7 @@ server <- function(input, output){
   
   ### Gráfico de evolución de FCR
   output$graf_evo_fcr <- renderEcharts4r({
-    # browser()
+
     data_evo_componetes() |> 
       fselect(fecha,fcr) |> 
       e_charts(x = fecha) |> 
@@ -397,9 +522,7 @@ server <- function(input, output){
       e_x_axis(axisLabel = list(color = "white",fontSize = 14)) |> 
       e_y_axis(axisLabel = list(color = "white",fontSize = 14), max = 100)
     
-    
   })
-  
 }
 
 shinyApp(ui,server)
